@@ -36,11 +36,13 @@ def iou_xyxy(b1, b2):
     return inter / (area1[:, None] + area2[None, :] - inter + 1e-6)
 
 class Trainer:
-    def __init__(self, model, loader, device, lr, wd):
+    def __init__(self, model, loader, device, lr, wd, evaluator=None, eval_loader=None):
         self.model = model.to(device)
         self.loader = loader
         self.device = device
         self.opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=wd)
+        self.evaluator = evaluator
+        self.eval_loader = eval_loader
 
     def _loss(self, pred, targets):
         logits = pred["pred_logits"]
@@ -92,4 +94,10 @@ class Trainer:
                 if (i + 1) % Config.PRINT_FREQ == 0:
                     print(f"[Iter {i+1}] Loss: {loss.item():.4f}")
 
-            print(f"Epoch {ep+1} Avg Loss: {total / len(self.loader):.4f}")
+            avg_loss = total / len(self.loader)
+            print(f"Epoch {ep+1} Avg Loss: {avg_loss:.4f}")
+
+            if self.evaluator is not None and self.eval_loader is not None:
+                precision, recall = self.evaluator.evaluate(self.eval_loader)
+                print(f"[Epoch {ep+1}] Eval Precision: {precision:.4f}, Recall: {recall:.4f}")
+                self.model.train()

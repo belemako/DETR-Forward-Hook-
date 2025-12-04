@@ -14,7 +14,9 @@ set -euo pipefail
 
 NETID="bjd8427"
 WRKDIR="$PWD"
-DRIVE_DIR="/scratch/${NETID}/DETR-Forward-Hook"
+CACHE_DIR="$WRKDIR/.job_cache"
+TORCH_CACHE="$CACHE_DIR/.torch-cache"
+HF_CACHE="$CACHE_DIR/.hf-cache"
 PYFILE="main.py"
 
 SIF="/scratch/${NETID}/cuda11.8.86-cudnn8.7-devel-ubuntu22.04.2.sif"
@@ -30,9 +32,7 @@ echo "============================================================"
 # GPU info
 $SING bash -lc 'nvidia-smi || echo "No GPU info available."'
 
-# Host-side caches
-mkdir -p "$DRIVE_DIR" "$DRIVE_DIR/.torch-cache" "$DRIVE_DIR/.hf-cache"
-mkdir -p "$WRKDIR/logs"
+mkdir -p "$TORCH_CACHE" "$HF_CACHE" "$WRKDIR/logs"
 
 # ---------- Sanity & activation ----------
 $SING bash -lc '
@@ -81,8 +81,8 @@ $SING bash -lc "
 
   export MPLBACKEND=Agg
   export PYTHONUNBUFFERED=1
-  export TORCH_HOME='$DRIVE_DIR/.torch-cache'
-  export TRANSFORMERS_CACHE='$DRIVE_DIR/.hf-cache'
+  export TORCH_HOME='$TORCH_CACHE'
+  export TRANSFORMERS_CACHE='$HF_CACHE'
 
   cd '$WRKDIR'
   python '$PYFILE'

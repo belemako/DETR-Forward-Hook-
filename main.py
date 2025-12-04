@@ -42,13 +42,21 @@ def main():
                              shuffle=False, collate_fn=collate_fn)
 
     model = DETRFeatureDiffOption1B(Config.DETR_NAME, Config.NUM_CLASSES)
-    trainer = Trainer(model, train_loader, device, Config.LR, Config.WEIGHT_DECAY)
+    evaluator = Evaluator(model, device)
+    trainer = Trainer(
+        model,
+        train_loader,
+        device,
+        Config.LR,
+        Config.WEIGHT_DECAY,
+        evaluator=evaluator,
+        eval_loader=test_loader,
+    )
 
     trainer.train(Config.NUM_EPOCHS)
 
     torch.save(model.state_dict(), f"{Config.CHECKPOINT_DIR}/detr_option1b.pth")
 
-    evaluator = Evaluator(model, device)
     evaluator.evaluate(test_loader)
 
 if __name__ == "__main__":
