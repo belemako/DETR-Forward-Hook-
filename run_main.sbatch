@@ -82,7 +82,7 @@ $SING bash -lc "
   export MPLBACKEND=Agg
   export PYTHONUNBUFFERED=1
   export TORCH_HOME='$TORCH_CACHE'
-  export TRANSFORMERS_CACHE='$HF_CACHE'
+  export HF_HOME='$HF_CACHE'
 
   cd '$WRKDIR'
   python '$PYFILE'

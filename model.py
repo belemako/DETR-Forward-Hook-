@@ -53,7 +53,7 @@ class DETRFeatureDiffOption1B(nn.Module):
             transformer = _DetrTransformerProxy(self.base.model)
         self.transformer = transformer
 
-        self.query_embed = self.base.model.query_position.weight  # (num_queries, d_model)
+        self.query_embed = self._resolve_query_embed()  # (num_queries, d_model)
 
         d_model = self.base.config.d_model
         self.class_embed = nn.Linear(d_model, num_classes + 1)
@@ -63,6 +63,23 @@ class DETRFeatureDiffOption1B(nn.Module):
 
         hook_module = getattr(self.backbone, "conv_encoder", self.backbone)
         hook_module.register_forward_hook(self._hook)
+
+    def _resolve_query_embed(self):
+        # Support both old (.query_position) and new (.query_position_embeddings) naming.
+        candidates = [
+            "query_position",
+            "query_position_embeddings",
+            "query_embed",
+            "query_position_embed",
+        ]
+        for name in candidates:
+            module = getattr(self.base.model, name, None)
+            if module is None:
+                continue
+            if hasattr(module, "weight"):
+                return module.weight
+            return module
+        raise AttributeError("DetrModel does not expose a query embedding parameter.")
 
     def _hook(self, module, inp, out):
         self._buffer.append(out)
