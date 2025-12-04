@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=detr_forward_hook
-#SBATCH --output=/scratch/bjd8427/DETR-Forward-Hook/logs/%x-%j.out
-#SBATCH --error=/scratch/bjd8427/DETR-Forward-Hook/logs/%x-%j.err
+#SBATCH --output=logs/%x-%j.out
+#SBATCH --error=logs/%x-%j.err
 #SBATCH --time=02:00:00
 #SBATCH --partition=n1s8-t4-1
 #SBATCH --gres=gpu:1
@@ -32,6 +32,7 @@ $SING bash -lc 'nvidia-smi || echo "No GPU info available."'
 
 # Host-side caches
 mkdir -p "$DRIVE_DIR" "$DRIVE_DIR/.torch-cache" "$DRIVE_DIR/.hf-cache"
+mkdir -p "$WRKDIR/logs"
 
 # ---------- Sanity & activation ----------
 $SING bash -lc '
